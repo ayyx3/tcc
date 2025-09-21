@@ -1,0 +1,44 @@
+    body { 
+    font-family: "Josefin Sans", sans-serif; 
+    background:#627df7; 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    height:100vh; 
+    margin:0; 
+    }
+    .container { 
+    background:#fff; 
+    padding:30px; 
+    border-radius:8px; 
+    box-shadow:0 0 10px #aaa; 
+    width:300px; 
+    }
+    input, button {
+    font-family: "Josefin Sans", sans-serif; 
+    width:100%; 
+    padding:10px; 
+    margin:10px 0; 
+    border-radius:5px; 
+    border:1px solid #ccc; 
+    font-size:16px; 
+    }
+    button { 
+    background:#db6d05; 
+    color:white; 
+    border:none; 
+    cursor:pointer; 
+    }
+    button:hover { 
+    background:#7e511e; 
+    }
+    .msg { 
+    margin-top:10px; 
+    font-weight:bold; 
+    }
+    .error { 
+    color:red; 
+    }
+    .success { 
+    color:green; 
+    }

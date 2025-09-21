@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login Bibliotecária</title>
+  <link rel="stylesheet" href="login-bibliotecaria.css" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  
+</head>
+<body>
+
+  <div class="container">
+    <h2>Login Bibliotecária</h2>
+
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="senha" placeholder="Senha" />
+    <button onclick="login()">Entrar</button>
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <script src="login-bibliotecaria.js"></script>
+</body>
+</html>

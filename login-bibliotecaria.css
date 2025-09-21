@@ -1,0 +1,57 @@
+    body {
+    font-family: "Josefin Sans", sans-serif;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    }
+
+    .container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    width: 300px;
+    text-align: center;
+    }
+
+    h2 {
+    color: #333;
+    margin-bottom: 20px;
+    }
+
+    input, button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    font-family: "Josefin Sans", sans-serif;
+    }
+
+    button {
+    background: #e66f0e;
+    color: white;
+    border: none;
+    cursor: pointer;
+    }
+
+    button:hover {
+    background: #cc5f08;
+    }
+
+    .msg {
+    margin-top: 10px;
+    font-weight: bold;
+    }
+
+    .error {
+    color: red;
+    }
+
+    .success {
+    color: green;
+    }

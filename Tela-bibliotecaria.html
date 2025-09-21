@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biblioteca - Sistema Completo</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- FontAwesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- CSS externo -->
+  <link rel="stylesheet" href="tela-bibliotecaria.css" />
+</head>
+<body>
+
+  <nav>
+    <button id="tabLivrosBtn" class="active">Gerenciar Livros</button>
+    <button id="tabCadastroBtn">Cadastro de Aluno</button>
+    <button id="tabEmprestimosBtn">Gerenciar Empréstimos</button>
+  </nav>
+
+<script>
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) {
+      // Redireciona para a tela de login se não estiver logado
+      window.location.href = "login-bibliotecaria.html";
+    }
+  });
+</script>
+
+
+
+  <div class="container">
+
+    <!-- Gerenciar Livros -->
+    <section id="tabLivros" class="tab-content active">
+      <div class="livros-box" id="telaLivros">
+        <div class="titulo-livros">Livros Disponíveis</div>
+        <div class="acoes" id="buscarLivro">
+          <input type="text" id="inputBuscaLivro" placeholder="Pesquisar autor ou livro" aria-label="Pesquisar livro" />
+          <button onclick="abrirModal()" id="btnAdd">+ Adicionar Livro</button>
+          <button id="btnPesquisar">Pesquisar</button>
+        </div>
+        <div class="grid-livros" id="listaLivros"></div>
+      </div>
+
+      <!-- MODAL -->
+      <div id="modalLivro" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="fecharModal()">&times;</span>
+          <h3>Adicionar/Editar Livro</h3>
+          <input type="text" id="tituloLivro" placeholder="Título do livro" />
+          <input type="text" id="autorLivro" placeholder="Autor do livro" />
+          <input type="text" id="codigoLivro" placeholder="Código do livro" />
+          <input type="text" id="imagemLivro" placeholder="URL da imagem do livro" />
+          <button class="btnSenha" onclick="adicionarLivro()">Salvar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cadastro de Aluno -->
+    <section id="tabCadastro" class="tab-content">
+      <div class="container-cadastro">
+        <h2>Cadastro de Aluno</h2>
+        <input type="text" id="nomeAluno" placeholder="Nome Completo" />
+        <input type="text" id="matriculaAluno" placeholder="Matrícula" />
+        <button onclick="cadastrarAluno()">Cadastrar</button>
+        <div id="msgAluno" class="msg"></div>
+      </div>
+    </section>
+
+    <!-- Gerenciar Empréstimos -->
+    <section id="tabEmprestimos" class="tab-content empr">
+      <h1 class="section-title">Gerenciamento de Empréstimos e Devoluções</h1>
+
+      <div class="section">
+        <h2>Registrar Empréstimo</h2>
+        <input type="text" id="nomeEmp" placeholder="Nome do Aluno" />
+        <input type="text" id="matriculaEmp" placeholder="Matrícula" />
+        <input type="text" id="codigoEmp" placeholder="Código do Livro" />
+        <button class="empr-btn" onclick="registrarEmprestimo()">Registrar Empréstimo</button>
+      </div>
+
+      <div class="section">
+        <h2>Registrar Devolução</h2>
+        <input type="text" id="matriculaDev" placeholder="Matrícula" />
+        <input type="text" id="codigoDev" placeholder="Código do Livro" />
+        <button class="empr-btn" onclick="registrarDevolucao()">Registrar Devolução</button>
+      </div>
+
+      <div class="section">
+        <h2>Pesquisar Empréstimos</h2>
+        <input type="text" id="matriculaBusca" placeholder="Digite a matrícula (opcional)" />
+        <select id="filtroDevolucao">
+          <option value="pendentes">Somente Pendentes</option>
+          <option value="devolvidos">Somente Devolvidos</option>
+          <option value="todos">Todos</option>
+        </select>
+        <button class="empr-btn" onclick="buscarEmprestimos()">Buscar Empréstimos</button>
+        <div id="resultadosBusca"></div>
+      </div>
+
+      <div id="mensagem" class="msg"></div>
+    </section>
+
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- Seu JS principal -->
+  <script src="tela-bibliotecaria.js"></script>
+
+  <script>
+    // Controle de abas
+    const tabLivrosBtn = document.getElementById('tabLivrosBtn');
+    const tabCadastroBtn = document.getElementById('tabCadastroBtn');
+    const tabEmprestimosBtn = document.getElementById('tabEmprestimosBtn');
+
+    const tabLivros = document.getElementById('tabLivros');
+    const tabCadastro = document.getElementById('tabCadastro');
+    const tabEmprestimos = document.getElementById('tabEmprestimos');
+
+    function limparActive() {
+      tabLivrosBtn.classList.remove('active');
+      tabCadastroBtn.classList.remove('active');
+      tabEmprestimosBtn.classList.remove('active');
+      tabLivros.classList.remove('active');
+      tabCadastro.classList.remove('active');
+      tabEmprestimos.classList.remove('active');
+    }
+
+    tabLivrosBtn.addEventListener('click', () => {
+      limparActive();
+      tabLivrosBtn.classList.add('active');
+      tabLivros.classList.add('active');
+    });
+
+    tabCadastroBtn.addEventListener('click', () => {
+      limparActive();
+      tabCadastroBtn.classList.add('active');
+      tabCadastro.classList.add('active');
+    });
+
+    tabEmprestimosBtn.addEventListener('click', () => {
+      limparActive();
+      tabEmprestimosBtn.classList.add('active');
+      tabEmprestimos.classList.add('active');
+    });
+  </script>
+
+</body>
+</html>
