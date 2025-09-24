@@ -2,25 +2,462 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <title>Login Bibliotecária</title>
-  <link rel="stylesheet" href="login-bibliotecaria.css" />
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biblioteca - Sistema Completo</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- CSS externo -->
+  <link rel="stylesheet" href="tela-bibliotecaria.css" />
+  <style>
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      text-align: center;
+      position: relative;
+    }
+
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* Tabs */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Container geral */
+    .container { padding: 20px; font-family: 'Josefin Sans', sans-serif; }
+
+    nav button { margin-right: 5px; }
+    nav button.active { font-weight: bold; }
+
+    .acoes { position: relative; z-index: 1; margin-bottom: 10px; }
+
+    .msg { margin-top:10px; }
+    .msg.error { color:red; }
+    .msg.success { color:green; }
+
+    .livro-card { border: 1px solid #ccc; padding:10px; margin:5px; display:inline-block; width:150px; text-align:center; }
+    .livro-card img { width:100px; height:150px; object-fit:cover; margin-bottom:5px; }
+  </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2>Login Bibliotecária</h2>
-
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="senha" placeholder="Senha" />
-    <button onclick="login()">Entrar</button>
-
-    <div id="msg" class="msg"></div>
+  <!-- MODAL LOGIN BIBLIOTECÁRIA -->
+  <div id="modalLogin" class="modal" style="display:flex;">
+    <div class="container">
+      <h2>Login Bibliotecária</h2>
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="senha" placeholder="Senha" />
+      <button onclick="login()">Entrar</button>
+      <div id="msgLogin" class="msg"></div>
+    </div>
   </div>
 
-  <script src="login-bibliotecaria.js"></script>
+  <!-- TELA PRINCIPAL -->
+  <div id="telaPrincipal" class="container" style="display:none;">
+
+    <nav>
+      <button id="tabLivrosBtn" class="active">Gerenciar Livros</button>
+      <button id="tabCadastroBtn">Cadastro de Aluno</button>
+      <button id="tabEmprestimosBtn">Gerenciar Empréstimos</button>
+      <button onclick="logout()">Sair</button>
+    </nav>
+
+    <!-- Gerenciar Livros -->
+    <section id="tabLivros" class="tab-content active">
+      <div class="livros-box">
+        <div class="titulo-livros">Livros Disponíveis</div>
+        <div class="acoes">
+          <input type="text" id="inputBuscaLivro" placeholder="Pesquisar autor ou livro" />
+          <button onclick="abrirModal()" id="btnAdd">+ Adicionar Livro</button>
+          <button id="btnPesquisar">Pesquisar</button>
+        </div>
+        <div class="grid-livros" id="listaLivros"></div>
+      </div>
+
+      <!-- Modal Adicionar/Editar Livro -->
+      <div id="modalLivro" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="fecharModal()">&times;</span>
+          <h3>Adicionar/Editar Livro</h3>
+          <input type="text" id="tituloLivro" placeholder="Título do livro" />
+          <input type="text" id="autorLivro" placeholder="Autor do livro" />
+          <input type="text" id="codigoLivro" placeholder="Código do livro" />
+          <input type="text" id="imagemLivro" placeholder="URL da imagem do livro" />
+          <button class="btnSenha" onclick="adicionarLivro()">Salvar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cadastro de Aluno -->
+    <section id="tabCadastro" class="tab-content">
+      <div class="container-cadastro">
+        <h2>Cadastro de Aluno</h2>
+        <input type="text" id="nomeAluno" placeholder="Nome Completo" />
+        <input type="text" id="matriculaAluno" placeholder="Matrícula" />
+        <button onclick="cadastrarAluno()">Cadastrar</button>
+        <div id="msgAluno" class="msg"></div>
+      </div>
+    </section>
+
+    <!-- Gerenciar Empréstimos -->
+    <section id="tabEmprestimos" class="tab-content empr">
+      <h1 class="section-title">Gerenciamento de Empréstimos e Devoluções</h1>
+      <div class="section">
+        <h2>Registrar Empréstimo</h2>
+        <input type="text" id="nomeEmp" placeholder="Nome do Aluno" />
+        <input type="text" id="matriculaEmp" placeholder="Matrícula" />
+        <input type="text" id="codigoEmp" placeholder="Código do Livro" />
+        <button class="empr-btn" onclick="registrarEmprestimo()">Registrar Empréstimo</button>
+      </div>
+      <div class="section">
+        <h2>Registrar Devolução</h2>
+        <input type="text" id="matriculaDev" placeholder="Matrícula" />
+        <input type="text" id="codigoDev" placeholder="Código do Livro" />
+        <button class="empr-btn" onclick="registrarDevolucao()">Registrar Devolução</button>
+      </div>
+      <div class="section">
+        <h2>Pesquisar Empréstimos</h2>
+        <input type="text" id="matriculaBusca" placeholder="Digite a matrícula (opcional)" />
+        <select id="filtroDevolucao">
+          <option value="pendentes">Somente Pendentes</option>
+          <option value="devolvidos">Somente Devolvidos</option>
+          <option value="todos">Todos</option>
+        </select>
+        <button class="empr-btn" onclick="buscarEmprestimos()">Buscar Empréstimos</button>
+        <div id="resultadosBusca"></div>
+      </div>
+      <div id="mensagem" class="msg"></div>
+    </section>
+
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // --- CONFIGURAÇÃO FIREBASE ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5lw6roQDGx43Fd1_uIxZjVyHtnVonZ2Y",
+      authDomain: "biblioteca-73fcc.firebaseapp.com",
+      databaseURL: "https://biblioteca-73fcc-default-rtdb.firebaseio.com",
+      projectId: "biblioteca-73fcc",
+      storageBucket: "biblioteca-73fcc.appspot.com",
+      messagingSenderId: "1015670120228",
+      appId: "1:1015670120228:web:d6d1d827871e63881f1db1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+    const db = firebase.firestore();
+
+    // --- ELEMENTOS ---
+    const listaLivros = document.getElementById('listaLivros');
+    const modalLivro = document.getElementById('modalLivro');
+    const inputTitulo = document.getElementById('tituloLivro');
+    const inputAutor = document.getElementById('autorLivro');
+    const inputCodigo = document.getElementById('codigoLivro');
+    const inputImagem = document.getElementById('imagemLivro');
+    const inputPesquisa = document.getElementById('inputBuscaLivro');
+    const btnPesquisar = document.getElementById('btnPesquisar');
+    const msgAluno = document.getElementById('msgAluno');
+    const mensagem = document.getElementById('mensagem');
+    const resultadosDiv = document.getElementById('resultadosBusca');
+
+    let editarKey = null;
+
+    // --- LOGIN ---
+    function login() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+      auth.signInWithEmailAndPassword(email, senha)
+        .then(() => {
+          document.getElementById('modalLogin').style.display = 'none';
+          document.getElementById('telaPrincipal').style.display = 'block';
+          listarLivrosRealtime();
+        })
+        .catch(err => document.getElementById('msgLogin').innerText = err.message);
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        document.getElementById('telaPrincipal').style.display = 'none';
+        document.getElementById('modalLogin').style.display = 'flex';
+        document.getElementById('email').value = '';
+        document.getElementById('senha').value = '';
+        document.getElementById('msgLogin').innerText = '';
+      });
+    }
+
+    auth.onAuthStateChanged(user => {
+      if(user){
+        document.getElementById('modalLogin').style.display = 'none';
+        document.getElementById('telaPrincipal').style.display = 'block';
+        listarLivrosRealtime();
+      } else {
+        document.getElementById('telaPrincipal').style.display = 'none';
+        document.getElementById('modalLogin').style.display = 'flex';
+      }
+    });
+
+    // --- ABAS ---
+    const tabLivrosBtn = document.getElementById('tabLivrosBtn');
+    const tabCadastroBtn = document.getElementById('tabCadastroBtn');
+    const tabEmprestimosBtn = document.getElementById('tabEmprestimosBtn');
+    const tabLivros = document.getElementById('tabLivros');
+    const tabCadastro = document.getElementById('tabCadastro');
+    const tabEmprestimos = document.getElementById('tabEmprestimos');
+
+    function limparActive() {
+      tabLivrosBtn.classList.remove('active');
+      tabCadastroBtn.classList.remove('active');
+      tabEmprestimosBtn.classList.remove('active');
+      tabLivros.classList.remove('active');
+      tabCadastro.classList.remove('active');
+      tabEmprestimos.classList.remove('active');
+    }
+
+    tabLivrosBtn.addEventListener('click', () => {
+      limparActive();
+      tabLivrosBtn.classList.add('active');
+      tabLivros.classList.add('active');
+    });
+    tabCadastroBtn.addEventListener('click', () => {
+      limparActive();
+      tabCadastroBtn.classList.add('active');
+      tabCadastro.classList.add('active');
+    });
+    tabEmprestimosBtn.addEventListener('click', () => {
+      limparActive();
+      tabEmprestimosBtn.classList.add('active');
+      tabEmprestimos.classList.add('active');
+    });
+
+    // --- FUNÇÕES LIVROS ---
+    function listarLivrosRealtime() {
+      listaLivros.innerHTML = 'Carregando...';
+      database.ref('livros').on('value', snapshot => {
+        const livros = snapshot.val();
+        listaLivros.innerHTML = '';
+        if (!livros) {
+          listaLivros.innerHTML = '<p>Nenhum livro encontrado.</p>';
+          return;
+        }
+        const filtro = inputPesquisa.value.trim().toLowerCase();
+        Object.keys(livros).forEach(key => {
+          const livro = livros[key];
+          const titulo = (livro.titulo || '').toLowerCase();
+          const autor = (livro.autor || '').toLowerCase();
+          if (!filtro || titulo.includes(filtro) || autor.includes(filtro)) {
+            const card = document.createElement('div');
+            card.className = 'livro-card';
+            card.innerHTML = `
+              <img src="${livro.imagem || 'https://via.placeholder.com/150'}" alt="${livro.titulo}" />
+              <h4>${livro.titulo}</h4>
+              <p><strong>Autor:</strong> ${livro.autor}</p>
+              <p><strong>Código:</strong> ${livro.codigo}</p>
+              <button onclick="editarLivro('${key}')">Editar</button>
+              <button onclick="excluirLivro('${key}')">Excluir</button>
+            `;
+            listaLivros.appendChild(card);
+          }
+        });
+      });
+    }
+
+    btnPesquisar.addEventListener('click', listarLivrosRealtime);
+
+    function abrirModal() {
+      editarKey = null;
+      inputTitulo.value = '';
+      inputAutor.value = '';
+      inputCodigo.value = '';
+      inputImagem.value = '';
+      modalLivro.style.display = 'flex';
+    }
+
+    function fecharModal() {
+      modalLivro.style.display = 'none';
+    }
+
+    function adicionarLivro() {
+      const titulo = inputTitulo.value.trim();
+      const autor = inputAutor.value.trim();
+      const codigo = inputCodigo.value.trim();
+      const imagem = inputImagem.value.trim();
+
+      if (!titulo || !autor || !codigo) {
+        alert('Preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      const livro = { titulo, autor, codigo, imagem };
+
+      if (editarKey) {
+        database.ref('livros/' + editarKey).set(livro)
+          .then(() => { alert('Livro atualizado!'); fecharModal(); })
+          .catch(error => { console.error(error); alert('Erro ao atualizar livro: ' + error.message); });
+      } else {
+        const novoRef = database.ref('livros').push();
+        novoRef.set(livro)
+          .then(() => { alert('Livro adicionado!'); fecharModal(); })
+          .catch(error => { console.error(error); alert('Erro ao adicionar livro: ' + error.message); });
+      }
+    }
+
+    function editarLivro(key) {
+      database.ref('livros/' + key).once('value')
+        .then(snapshot => {
+          const livro = snapshot.val();
+          if (!livro) return alert('Livro não encontrado.');
+          editarKey = key;
+          inputTitulo.value = livro.titulo;
+          inputAutor.value = livro.autor;
+          inputCodigo.value = livro.codigo;
+          inputImagem.value = livro.imagem || '';
+          modalLivro.style.display = 'flex';
+        }).catch(console.error);
+    }
+
+    function excluirLivro(key) {
+      if (confirm('Tem certeza que deseja excluir este livro?')) {
+        database.ref('livros/' + key).remove()
+          .then(() => alert('Livro excluído!'))
+          .catch(error => { console.error(error); alert('Erro ao excluir livro: ' + error.message); });
+      }
+    }
+
+    // --- ALUNOS ---
+    async function cadastrarAluno() {
+      const nome = document.getElementById('nomeAluno').value.trim();
+      const matricula = document.getElementById('matriculaAluno').value.trim();
+      if (!nome || !matricula) {
+        msgAluno.textContent = "Preencha todos os campos.";
+        msgAluno.className = "msg error";
+        return;
+      }
+      try {
+        const query = await db.collection('Alunos').where('matricula','==',matricula).get();
+        if(!query.empty){
+          msgAluno.textContent = "Matrícula já cadastrada.";
+          msgAluno.className = "msg error";
+          return;
+        }
+        await db.collection('Alunos').add({ nome:nome.toLowerCase(), matricula });
+        msgAluno.textContent = "Aluno cadastrado com sucesso!";
+        msgAluno.className = "msg success";
+        document.getElementById('nomeAluno').value='';
+        document.getElementById('matriculaAluno').value='';
+      } catch(error){
+        msgAluno.textContent = "Erro ao cadastrar: "+error.message;
+        msgAluno.className = "msg error";
+      }
+    }
+
+    // --- EMPRÉSTIMOS ---
+    async function registrarEmprestimo() {
+      const nome = document.getElementById('nomeEmp').value.trim();
+      const matricula = document.getElementById('matriculaEmp').value.trim();
+      const codigo = document.getElementById('codigoEmp').value.trim();
+      if(!nome || !matricula || !codigo){
+        mensagem.textContent = "⚠️ Preencha todos os campos do empréstimo.";
+        mensagem.className = "msg error";
+        return;
+      }
+      try {
+        await db.collection('emprestimos').add({
+          nome, matricula, codigo,
+          data_emprestimo: new Date().toISOString(),
+          data_devolucao: null
+        });
+        mensagem.textContent = "✅ Empréstimo registrado com sucesso!";
+        mensagem.className = "msg success";
+        document.getElementById('nomeEmp').value='';
+        document.getElementById('matriculaEmp').value='';
+        document.getElementById('codigoEmp').value='';
+      } catch(error){
+        mensagem.textContent = "❌ Erro ao registrar empréstimo: "+error.message;
+        mensagem.className = "msg error";
+      }
+    }
+
+    async function registrarDevolucao() {
+      const matricula = document.getElementById('matriculaDev').value.trim();
+      const codigo = document.getElementById('codigoDev').value.trim();
+      if(!matricula || !codigo){
+        mensagem.textContent = "⚠️ Preencha todos os campos da devolução.";
+        mensagem.className = "msg error";
+        return;
+      }
+      try {
+        const query = await db.collection('emprestimos')
+          .where('matricula','==',matricula)
+          .where('codigo','==',codigo)
+          .where('data_devolucao','==',null).get();
+        if(query.empty){
+          mensagem.textContent = "⚠️ Empréstimo não encontrado ou já devolvido.";
+          mensagem.className = "msg error";
+          return;
+        }
+        query.forEach(doc => doc.ref.update({ data_devolucao: new Date().toISOString() }));
+        mensagem.textContent = "✅ Devolução registrada com sucesso!";
+        mensagem.className = "msg success";
+        document.getElementById('matriculaDev').value='';
+        document.getElementById('codigoDev').value='';
+      } catch(error){
+        mensagem.textContent = "❌ Erro na devolução: "+error.message;
+        mensagem.className = "msg error";
+      }
+    }
+
+    async function buscarEmprestimos() {
+      resultadosDiv.innerHTML = "Carregando...";
+      const filtroMatricula = document.getElementById('matriculaBusca').value.trim();
+      const filtroDevolucao = document.getElementById('filtroDevolucao').value;
+      try {
+        let query = db.collection('emprestimos');
+        if(filtroMatricula) query = query.where('matricula','==',filtroMatricula);
+        const snapshot = await query.get();
+        let html = '';
+        snapshot.forEach(doc=>{
+          const e = doc.data();
+          const devolvido = e.data_devolucao ? "✅" : "❌";
+          if(filtroDevolucao==='pendentes' && e.data_devolucao) return;
+          if(filtroDevolucao==='devolvidos' && !e.data_devolucao) return;
+          html += `<p>${e.nome} | ${e.matricula} | ${e.codigo} | Empréstimo: ${e.data_emprestimo} | Devolução: ${e.data_devolucao || 'Pendente'} | ${devolvido}</p>`;
+        });
+        resultadosDiv.innerHTML = html || 'Nenhum registro encontrado.';
+      } catch(error){
+        resultadosDiv.innerHTML = "Erro: "+error.message;
+      }
+    }
+  </script>
+
 </body>
 </html>
